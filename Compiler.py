@@ -56,12 +56,27 @@ def compares(instruction):
     elif instruction[0] == "gt":
         jumpCode = "@" + title + gt
     counter += 1
-    return pop + getMem  + jumpCode + false + true + label
+    return pop + getMem + jumpCode + false + label + true
 
 
 def main():
-    print(false)
-    jump(["eq"])
+    input = Path("FileName.vm.txt")
+
+    if not input.exists():
+        sys.exit(1)
+
+    with input.open("r") as file:
+        for line in file:
+            line = line.strip()
+
+            # skip blank lines and comments
+            if not line or line.startswith("//"):
+                continue
+            command = line.split()
+
+            if command[0] in ("eq", "lt", "gt"):
+                asm = compares(command)
+                print(asm)
 
 if __name__=="__main__":
     main()
