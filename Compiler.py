@@ -128,9 +128,20 @@ def main():
                 continue
             command = line.split()
 
-            if command[0] in ("eq", "lt", "gt"):
-                asm = compares(command)
-                print(asm)
+            if command[0] in operations or command[0] in ("eq", "lt", "gt"):
+                asm = arithmetic(command[0])
+
+            elif command[0] == "push":
+                asm = pushCommand(command[1], command[2])
+
+            elif command[0] == "pop":
+                asm = popCommand(command[1], command[2])
+
+            else:
+                continue
+
+            print(asm)
+
 
 if __name__=="__main__":
     main()
