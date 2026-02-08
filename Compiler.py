@@ -96,6 +96,23 @@ def popCommand(segment, index):
     if segment == "static":
         return pop + f"@{fileName}.{index}\nM=D\n"
 
+def arithmetic(command):
+    if command in ("add", "sub", "and", "or"):
+        return (
+            "@SP\nM=M-1\nA=M\nD=M\n"
+            "@SP\nM=M-1\nA=M\n"
+            f"M=M{operations[command]}D\n"
+            "@SP\nM=M+1\n"
+        )
+
+    if command in ("neg", "not"):
+        return (
+            "@SP\nA=M-1\n"
+            f"M={operations[command]}M\n"
+        )
+
+    return compares([command])
+
 def main():
     input = Path("FileName.vm.txt")
 
