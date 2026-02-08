@@ -35,7 +35,7 @@ true = "D=M-D\nM=-1\n" # set to true
 false = "@SP\nA=M-1\nM=0\n" # set to false
 
 
-pop = "@SP\nAM=M-1\nD=M\n"
+pop = "@SP\nAM=M-1\nD=M\n" #  Still gotta ask if AM = M-1 is allowed
 getMem = "@SP\nA=M-1\n"
 
 def compares(instruction):
@@ -57,6 +57,25 @@ def compares(instruction):
     labelCounter += 1
     return pop + getMem + jumpCode + false + label + true
 
+def pushCommand(segment, index):
+    if segment == "constant":
+        return f"@{index}\nD=A\n" + push
+
+    if segment in ("local", "argument", "this", "that"):
+        return (
+            f"@{segments[segment]}\nD=M\n"
+            f"@{index}\nA=D+A\nD=M\n"
+            + push
+        )
+
+    if segment == "temp":
+        return f"@{5 + int(index)}\nD=M\n" + push
+
+    if segment == "pointer":
+        return f"@{3 + int(index)}\nD=M\n" + push
+
+    if segment == "static":
+        return f"@{fileName}.{index}\nD=M\n" + push
 
 def popCommand(segment, index):
     if segment in ("local", "argument", "this", "that"):
