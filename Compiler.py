@@ -35,7 +35,7 @@ true = "D=M-D\nM=-1\n" # set to true
 false = "@SP\nA=M-1\nM=0\n" # set to false
 
 
-pop = "@SP\nAM=M-1\nD=M\n" #  Still gotta ask if AM = M-1 is allowed
+pop = "@SP\nM=M-1\nA=M\nD=M\n" 
 getMem = "@SP\nA=M-1\n"
 
 def compares(instruction):
@@ -43,17 +43,18 @@ def compares(instruction):
     title = "CompTrue_" + str(labelCounter)
     label = "(" + title + ")\n"
 
-    if instruction[0] not in compares:
+    if instruction[0] not in ("eq", "lt", "gt"):
         raise ValueError("Invalid command")
 
     if instruction[0] == "eq":
-        jumpCode = "@" + title + eq
+        jumpCode = "@" + title + "\n" + eq
     
     elif instruction[0] == "lt":
-        jumpCode = "@" + title + lt
+        jumpCode = "@" + title + "\n" + lt
 
     elif instruction[0] == "gt":
-        jumpCode = "@" + title + gt
+        jumpCode = "@" + title + "\n" + gt
+
     labelCounter += 1
     return pop + getMem + jumpCode + false + label + true
 
