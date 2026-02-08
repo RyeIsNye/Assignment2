@@ -4,7 +4,8 @@ import sys
 # 13 - 15 are temperaruy registers
 # 0 - 2 are for this, that, pointer
 
-counter = 0
+labelCounter = 0
+fileName = "FileName"
 
 operations = {
     "add" : "+",
@@ -34,14 +35,12 @@ true = "D=M-D\nM=-1\n" # set to true
 false = "@SP\nA=M-1\nM=0\n" # set to false
 
 
-#This one is wrong fix it
-pop = "@SP\nAM=M-1\nD=M\n" # pop stack to D
-
+pop = "@SP\nAM=M-1\nD=M\n"
 getMem = "@SP\nA=M-1\n"
 
 def compares(instruction):
-    global counter
-    title = "CompTrue_" + str(counter)
+    global labelCounter
+    title = "CompTrue_" + str(labelCounter)
     label = "(" + title + ")\n"
 
     if instruction[0] not in compares:
@@ -55,9 +54,28 @@ def compares(instruction):
 
     elif instruction[0] == "gt":
         jumpCode = "@" + title + gt
-    counter += 1
+    labelCounter += 1
     return pop + getMem + jumpCode + false + label + true
 
+
+def popCommand(segment, index):
+    if segment in ("local", "argument", "this", "that"):
+        return (
+            f"@{segments[segment]}\nD=M\n"
+            f"@{index}\nD=D+A\n"
+            "@R13\nM=D\n"
+            + pop +
+            "@R13\nA=M\nM=D\n"
+        )
+
+    if segment == "temp":
+        return pop + f"@{5 + int(index)}\nM=D\n"
+
+    if segment == "pointer":
+        return pop + f"@{3 + int(index)}\nM=D\n"
+
+    if segment == "static":
+        return pop + f"@{fileName}.{index}\nM=D\n"
 
 def main():
     input = Path("FileName.vm.txt")
