@@ -31,32 +31,62 @@ lt = "D;JLT\n" # jump if less than
 gt = "D;JGT\n" # jump if greater than
 
 push = "@SP\nA=M\nM=D\n" + "@SP\nM=M+1\n" # push D onto stack
-true = "D=M-D\nM=-1\n" # set to true
-false = "@SP\nA=M-1\nM=0\n" # set to false
-
-
 pop = "@SP\nM=M-1\nA=M\nD=M\n" 
-getMem = "@SP\nA=M-1\n"
+
 
 def compares(instruction):
     global labelCounter
-    title = "CompTrue_" + str(labelCounter)
-    label = "(" + title + ")\n"
-
+    trueLabel = "CompTrue_" + str(labelCounter)
+    endLabel = "CompEnd_" + str(labelCounter)
+    
     if instruction[0] not in ("eq", "lt", "gt"):
         raise ValueError("Invalid command")
 
     if instruction[0] == "eq":
-        jumpCode = "@" + title + "\n" + eq
+        jump = eq
     
     elif instruction[0] == "lt":
-        jumpCode = "@" + title + "\n" + lt
+        jump = lt
 
     elif instruction[0] == "gt":
-        jumpCode = "@" + title + "\n" + gt
+        jump = gt
 
     labelCounter += 1
-    return pop + getMem + jumpCode + false + label + true
+    return (
+        # pop y
+        "@SP\n"
+        "M=M-1\n"
+        "A=M\n"
+        "D=M\n"
+
+        # pop x and compute x - y
+        "@SP\n"
+        "M=M-1\n"
+        "A=M\n"
+        "D=M-D\n"
+
+        # if true, jump
+        f"@{trueLabel}\n"
+        f"{jump}"
+
+        #false
+        "@SP\n"
+        "A=M\n"
+        "M=0\n"
+        f"@{endLabel}\n"
+        "0;JMP\n"
+
+        #true
+        f"({trueLabel})\n"
+        "@SP\n"
+        "A=M\n"
+        "M=-1\n"
+
+        # end
+        f"({endLabel})\n"
+        "@SP\n"
+        "M=M+1\n"
+    )
 
 def pushCommand(segment, index):
     if segment == "constant":
@@ -120,8 +150,10 @@ def main():
     if not input.exists():
         sys.exit(1)
 
-    with input.open("r") as file:
-        for line in file:
+    output = Path("FileName.asm")
+
+    with input.open("r") as infile, output.open("w") as outfile:
+        for line in infile:
             line = line.strip()
 
             # skip blank lines and comments
@@ -141,7 +173,7 @@ def main():
             else:
                 continue
 
-            print(asm)
+            outfile.write(asm)
 
 
 if __name__=="__main__":
