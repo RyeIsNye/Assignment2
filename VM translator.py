@@ -3,7 +3,7 @@ from pathlib import Path
 import sys
 # 13 - 15 are temperaruy registers
 # 0 - 2 are for this, that, pointer
-#
+
 labelCounter = 0
 fileName = "FileName"
 
@@ -195,3 +195,12 @@ def main():
 
 if __name__=="__main__":
     main()
+
+"""
+I should probably add
+@256
+D=A
+@SP
+M=D
+at the beginning to initialize the stack pointer but I don't think this is required?
+"""
