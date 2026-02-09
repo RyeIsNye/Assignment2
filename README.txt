@@ -18,6 +18,8 @@ eq   // should be true (-1) if code is correct and Ryan is not big dumb dumb.
 
 *Please note that everything MUST be in all lowercase, otherwise it will not work*  
 
+"FileName.vm.txt" should contain some example code to translate unless I just forgot.
+
 *Also this style of a README file was just me looking at images of README files + what I remeber from Java READMEs and mashing them together until I got something I liked.*
 *Please let me know if this is good enough or if there's a more specific way I should be writing this.*
 *Have fun!*

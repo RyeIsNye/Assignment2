@@ -7,6 +7,7 @@ import sys
 labelCounter = 0
 fileName = "FileName"
 
+# These are just conversions from the VM language so I can easily use them for the code
 operations = {
     "add" : "+",
     "sub" : "-",
@@ -16,6 +17,7 @@ operations = {
     "neg" : "-"
 }
 
+# More conversions from VM language to hack assembly
 segments ={
     "argument" : "ARG",
     "local" : "LCL",
@@ -35,6 +37,7 @@ pop = "@SP\nM=M-1\nA=M\nD=M\n"
 
 
 def compares(instruction):
+    #I could not figure this out for the life of me until you said aloud to someone else that it would be global.
     global labelCounter
     trueLabel = "CompTrue_" + str(labelCounter)
     endLabel = "CompEnd_" + str(labelCounter)
@@ -52,6 +55,7 @@ def compares(instruction):
         jump = gt
 
     labelCounter += 1
+    # To quickly explain this whole section it pops x and y off then subtracts them. Where it jumps next depends on what was inputed.
     return (
         # pop y
         "@SP\n"
@@ -66,6 +70,7 @@ def compares(instruction):
         "D=M-D\n"
 
         # if true, jump
+        # Side note: f"{}" or formatted string is so amazing
         f"@{trueLabel}\n"
         f"{jump}"
 
@@ -89,22 +94,27 @@ def compares(instruction):
     )
 
 def pushCommand(segment, index):
+    # If constant then just set D reg to A
     if segment == "constant":
         return f"@{index}\nD=A\n" + push
 
     if segment in ("local", "argument", "this", "that"):
         return (
+            # This converts the segment into hack assembly then adds the index to it to get the correct address
+            # Then it sets D to the value at that address and pushes it onto the stack
             f"@{segments[segment]}\nD=M\n"
             f"@{index}\nA=D+A\nD=M\n"
             + push
         )
 
+    # Temp and pointer are just direct address
     if segment == "temp":
         return f"@{5 + int(index)}\nD=M\n" + push
 
     if segment == "pointer":
         return f"@{3 + int(index)}\nD=M\n" + push
 
+    # Static is just fileName.index
     if segment == "static":
         return f"@{fileName}.{index}\nD=M\n" + push
 
@@ -113,8 +123,10 @@ def popCommand(segment, index):
         return (
             f"@{segments[segment]}\nD=M\n"
             f"@{index}\nD=D+A\n"
+            # Temporary R13 is used to store the address
             "@R13\nM=D\n"
             + pop +
+            # Then it pops the value off the stack and stores it in the address stored in R13
             "@R13\nA=M\nM=D\n"
         )
 
@@ -127,7 +139,9 @@ def popCommand(segment, index):
     if segment == "static":
         return pop + f"@{fileName}.{index}\nM=D\n"
 
+
 def arithmetic(command):
+    # Add, Sub, And, Or need the top two values of the stack so the pop them off, do the math, the push back on
     if command in ("add", "sub", "and", "or"):
         return (
             "@SP\nM=M-1\nA=M\nD=M\n"
@@ -136,6 +150,7 @@ def arithmetic(command):
             "@SP\nM=M+1\n"
         )
 
+    # Neg and Not only need the top value of the stack
     if command in ("neg", "not"):
         return (
             "@SP\nA=M-1\n"
@@ -144,6 +159,7 @@ def arithmetic(command):
 
     return compares([command])
 
+# You've seen the file portion before
 def main():
     input = Path("FileName.vm.txt")
 
@@ -161,6 +177,7 @@ def main():
                 continue
             command = line.split()
 
+            # only process arithmetic, opperations, push, and pop commands
             if command[0] in operations or command[0] in ("eq", "lt", "gt"):
                 asm = arithmetic(command[0])
 
