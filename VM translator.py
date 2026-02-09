@@ -1,8 +1,6 @@
 import math
 from pathlib import Path
 import sys
-# 13 - 15 are temperaruy registers
-# 0 - 2 are for this, that, pointer
 
 labelCounter = 0
 fileName = "FileName"
@@ -35,7 +33,7 @@ gt = "D;JGT\n" # jump if greater than
 push = "@SP\nA=M\nM=D\n" + "@SP\nM=M+1\n" # push D onto stack
 pop = "@SP\nM=M-1\nA=M\nD=M\n" 
 
-
+# This function is for the eq, lt, and gt commands, and uses a global label counter to make sure that the labels are unique
 def compares(instruction):
     #I could not figure this out for the life of me until you said aloud to someone else that it would be global.
     global labelCounter
@@ -93,6 +91,7 @@ def compares(instruction):
         "M=M+1\n"
     )
 
+# This pushCommand takes in the segment and index and returns the assembly code to push the value at that segment and index onto the stack.
 def pushCommand(segment, index):
     # If constant then just set D reg to A
     if segment == "constant":
@@ -117,7 +116,8 @@ def pushCommand(segment, index):
     # Static is just fileName.index
     if segment == "static":
         return f"@{fileName}.{index}\nD=M\n" + push
-
+    
+# This popCommand takes in the segment and index and returns the assembly code to pop the value at the top of the stack and store it at that segment and index
 def popCommand(segment, index):
     if segment in ("local", "argument", "this", "that"):
         return (
@@ -159,7 +159,7 @@ def arithmetic(command):
 
     return compares([command])
 
-# You've seen the file portion before
+# This portion does the file handling and calls the functions to convert the VM commands into assembly
 def main():
     input = Path("FileName.vm.txt")
 
