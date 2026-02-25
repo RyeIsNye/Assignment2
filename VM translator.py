@@ -30,6 +30,7 @@ eq = "D;JEQ\n" # jump if equal
 lt = "D;JLT\n" # jump if less than
 gt = "D;JGT\n" # jump if greater than
 
+
 push = "@SP\nA=M\nM=D\n" + "@SP\nM=M+1\n" # push D onto stack
 pop = "@SP\nM=M-1\nA=M\nD=M\n" 
 
@@ -159,6 +160,39 @@ def arithmetic(command):
 
     return compares([command])
 
+def writeCall(functionName, nArgs):
+    global callCounter
+    returnLabel = f"{functionName}$ret.{callCounter}"
+    callCounter += 1
+
+    code = ""
+
+    code += f"@{returnLabel}\nD=A\n" + push
+
+    for seg in ["LCL", "ARG", "THIS", "THAT"]:
+        code += f"@{seg}\nD=M\n" + push
+
+    code += (
+        "@SP\nD=M\n"
+        f"@{int(nArgs) + 5}\n"
+        "D=D-A\n"
+        "@ARG\nM=D\n"
+    )
+
+    code += "@SP\nD=M\n@LCL\nM=D\n"
+    code += f"@{functionName}\n0;JMP\n"
+    code += f"({returnLabel})\n"
+
+    return code
+
+# Starts the program at the address 256
+def writeBootstrap():
+    return (
+        "@256\nD=A\n@SP\nM=D\n"
+        + writeCall("Sys.init", 0)
+    )
+
+
 # This portion does the file handling and calls the functions to convert the VM commands into assembly
 def main():
     input = Path("FileName.vm.txt")
@@ -189,7 +223,7 @@ def main():
 
             else:
                 continue
-
+            
             outfile.write(asm)
 
 
