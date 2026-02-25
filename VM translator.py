@@ -3,6 +3,8 @@ from pathlib import Path
 import sys
 
 labelCounter = 0
+callCounter = 0
+currentFunction = ""
 fileName = "FileName"
 
 # These are just conversions from the VM language so I can easily use them for the code
@@ -184,6 +186,22 @@ def writeCall(functionName, nArgs):
     code += f"({returnLabel})\n"
 
     return code
+
+#
+def writeLabel(label):
+    return f"({currentFunction}${label})\n"
+
+#
+def writeGoto(label):
+    return f"@{currentFunction}${label}\n0;JMP\n"
+
+#
+def writeIf(label):
+    return (
+        "@SP\nM=M-1\nA=M\nD=M\n"
+        f"@{currentFunction}${label}\n"
+        "D;JNE\n"
+    )
 
 # Starts the program at the address 256
 def writeBootstrap():
