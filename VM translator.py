@@ -210,6 +210,20 @@ def writeBootstrap():
         + writeCall("Sys.init", 0)
     )
 
+def writeReturn():
+    return (
+        "@LCL\nD=M\n@R13\nM=D\n"
+        "@5\nA=D-A\nD=M\n@R14\nM=D\n"
+        + pop +
+        "@ARG\nA=M\nM=D\n"
+        "@ARG\nD=M+1\n@SP\nM=D\n"
+        "@R13\nAM=M-1\nD=M\n@THAT\nM=D\n"
+        "@R13\nAM=M-1\nD=M\n@THIS\nM=D\n"
+        "@R13\nAM=M-1\nD=M\n@ARG\nM=D\n"
+        "@R13\nAM=M-1\nD=M\n@LCL\nM=D\n"
+        "@R14\nA=M\n0;JMP\n"
+    )
+
 
 # This portion does the file handling and calls the functions to convert the VM commands into assembly
 def main():
