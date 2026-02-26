@@ -1,4 +1,3 @@
-import math
 from pathlib import Path
 import sys
 
@@ -224,9 +223,19 @@ def writeReturn():
         "@R14\nA=M\n0;JMP\n"
     )
 
+def writeFunction(functionName, nVars):
+    global currentFunction
+    currentFunction = functionName
+
+    code = f"({functionName})\n"
+    for _ in range(int(nVars)):
+        code += "@0\nD=A\n" + push
+    return code
+
 
 # This portion does the file handling and calls the functions to convert the VM commands into assembly
 def main():
+
     input = Path("FileName.vm.txt")
 
     if not input.exists():
@@ -252,6 +261,24 @@ def main():
 
             elif command[0] == "pop":
                 asm = popCommand(command[1], command[2])
+            
+            elif command[0] == "label":
+                asm = writeLabel(command[1])
+
+            elif command[0] == "goto":
+                asm = writeGoto(command[1])
+
+            elif command[0] == "if-goto":
+                asm = writeIf(command[1])
+
+            elif command[0] == "function":
+                asm = writeFunction(command[1], command[2])
+
+            elif command[0] == "call":
+                asm = writeCall(command[1], command[2])
+
+            elif command[0] == "return":
+                asm = writeReturn()
 
             else:
                 continue
@@ -261,12 +288,3 @@ def main():
 
 if __name__=="__main__":
     main()
-
-"""
-I should probably add
-@256
-D=A
-@SP
-M=D
-at the beginning to initialize the stack pointer but I don't think this is required?
-"""
