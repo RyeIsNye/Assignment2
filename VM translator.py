@@ -161,6 +161,7 @@ def arithmetic(command):
 
     return compares([command])
 
+#sets up a new stack frame and jumps into the function.
 def writeCall(functionName, nArgs):
     global callCounter
     returnLabel = f"{functionName}$ret.{callCounter}"
@@ -186,15 +187,15 @@ def writeCall(functionName, nArgs):
 
     return code
 
-#
+# Defines a jump target inside a function
 def writeLabel(label):
     return f"({currentFunction}${label})\n"
 
-#
+# A function that always jumps to the label that is inputed
 def writeGoto(label):
     return f"@{currentFunction}${label}\n0;JMP\n"
 
-#
+# Same as WriteGoto but jumps to label only if the top of stack is true (non-zero number)
 def writeIf(label):
     return (
         "@SP\nM=M-1\nA=M\nD=M\n"
@@ -209,6 +210,7 @@ def writeBootstrap():
         + writeCall("Sys.init", 0)
     )
 
+# Absolutley destroys the function frame and jumps back to the caller
 def writeReturn():
     return (
         "@LCL\nD=M\n@R13\nM=D\n"
@@ -216,13 +218,16 @@ def writeReturn():
         + pop +
         "@ARG\nA=M\nM=D\n"
         "@ARG\nD=M+1\n@SP\nM=D\n"
+
         "@R13\nAM=M-1\nD=M\n@THAT\nM=D\n"
         "@R13\nAM=M-1\nD=M\n@THIS\nM=D\n"
         "@R13\nAM=M-1\nD=M\n@ARG\nM=D\n"
         "@R13\nAM=M-1\nD=M\n@LCL\nM=D\n"
+
         "@R14\nA=M\n0;JMP\n"
     )
 
+# It creates the function and sets up its local variables
 def writeFunction(functionName, nVars):
     global currentFunction
     currentFunction = functionName
@@ -241,6 +246,7 @@ def main():
     if not inputPath.exists():
         sys.exit(1)
 
+    # Does a bunch of file handling and is basically magic to me
     if inputPath.is_dir():
         vmFiles = list(inputPath.glob("*.vm"))
         outputPath = inputPath / (inputPath.name + ".asm")
@@ -264,7 +270,7 @@ def main():
 
                     command = line.split()
 
-                    # only process arithmetic, opperations, push, and pop commands
+                    # process all of the commands and calls all the functions when needed
                     if command[0] in operations or command[0] in ("eq", "lt", "gt"):
                         asm = arithmetic(command[0])
 
