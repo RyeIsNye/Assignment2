@@ -236,54 +236,66 @@ def writeFunction(functionName, nVars):
 # This portion does the file handling and calls the functions to convert the VM commands into assembly
 def main():
 
-    input = Path("FileName.vm.txt")
+    inputPath = Path(sys.argv[1])
 
-    if not input.exists():
+    if not inputPath.exists():
         sys.exit(1)
 
-    output = Path("FileName.asm")
+    if inputPath.is_dir():
+        vmFiles = list(inputPath.glob("*.vm"))
+        outputPath = inputPath / (inputPath.name + ".asm")
+    else:
+        vmFiles = [inputPath]
+        outputPath = inputPath.with_suffix(".asm")
 
-    with input.open("r") as infile, output.open("w") as outfile:
-        for line in infile:
-            line = line.strip()
+    with outputPath.open("w") as outfile:
+        outfile.write(writeBootstrap())
+        for vmFile in vmFiles:
 
-            # skip blank lines and comments
-            if not line or line.startswith("//"):
-                continue
-            command = line.split()
+            global fileName
+            fileName = vmFile.stem 
 
-            # only process arithmetic, opperations, push, and pop commands
-            if command[0] in operations or command[0] in ("eq", "lt", "gt"):
-                asm = arithmetic(command[0])
+            with vmFile.open("r") as infile:
+                for line in infile:
+                    line = line.strip()
 
-            elif command[0] == "push":
-                asm = pushCommand(command[1], command[2])
+                    if not line or line.startswith("//"):
+                        continue
 
-            elif command[0] == "pop":
-                asm = popCommand(command[1], command[2])
-            
-            elif command[0] == "label":
-                asm = writeLabel(command[1])
+                    command = line.split()
 
-            elif command[0] == "goto":
-                asm = writeGoto(command[1])
+                    # only process arithmetic, opperations, push, and pop commands
+                    if command[0] in operations or command[0] in ("eq", "lt", "gt"):
+                        asm = arithmetic(command[0])
 
-            elif command[0] == "if-goto":
-                asm = writeIf(command[1])
+                    elif command[0] == "push":
+                        asm = pushCommand(command[1], command[2])
 
-            elif command[0] == "function":
-                asm = writeFunction(command[1], command[2])
+                    elif command[0] == "pop":
+                        asm = popCommand(command[1], command[2])
+                    
+                    elif command[0] == "label":
+                        asm = writeLabel(command[1])
 
-            elif command[0] == "call":
-                asm = writeCall(command[1], command[2])
+                    elif command[0] == "goto":
+                        asm = writeGoto(command[1])
 
-            elif command[0] == "return":
-                asm = writeReturn()
+                    elif command[0] == "if-goto":
+                        asm = writeIf(command[1])
 
-            else:
-                continue
-            
-            outfile.write(asm)
+                    elif command[0] == "function":
+                        asm = writeFunction(command[1], command[2])
+
+                    elif command[0] == "call":
+                        asm = writeCall(command[1], command[2])
+
+                    elif command[0] == "return":
+                        asm = writeReturn()
+
+                    else:
+                        continue
+                    
+                    outfile.write(asm)
 
 
 if __name__=="__main__":
